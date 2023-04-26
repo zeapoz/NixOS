@@ -47,6 +47,11 @@ in {
             r = "ranger";
             cat = "bat --theme ansi";
 
+            t = "tmux";
+            ta = "tmux attach";
+            ts = "tmux list-sessions";
+            tk = "tmux kill-session";
+
             nr = "sudo nixos-rebuild switch --flake ~/.config/NixOS";
             nf = "cd ~/.config/NixOS && git pull";
             nup = "nf && nr";
@@ -58,6 +63,7 @@ in {
           };
           shellInit = ''
             set fish_greeting
+            set -gx DIRENV_LOG_FORMAT ""
             ${if config.modules.editors.neovim.enable then
               "set -gx EDITOR nvim"
             else if config.modules.editors.helix.enable then
@@ -81,6 +87,33 @@ in {
             {
               name = "fzf-fish";
               inherit (fzf-fish) src;
+            }
+          ];
+        };
+
+        tmux = {
+          enable = true;
+          baseIndex = 1;
+          clock24 = true;
+          disableConfirmationPrompt = true;
+          escapeTime = 0;
+          mouse = true;
+          prefix = "C-a";
+          extraConfig = ''
+            # Use correct colors.
+            set-option -sa terminal-overrides ",xterm*:Tc"
+
+            # Open panes in current directory.
+            bind '"' split-window -v -c "#{pane_current_path}"
+            bind % split-window -h -c "#{pane_current_path}"
+            bind c new-window -c "#{pane_current_path}"
+          '';
+          plugins = with pkgs.tmuxPlugins; [
+            {
+              plugin = onedark-theme;
+            }
+            {
+              plugin = sensible;
             }
           ];
         };
